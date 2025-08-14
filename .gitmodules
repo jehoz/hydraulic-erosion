@@ -7,3 +7,6 @@
 [submodule "vendor/rlImGui"]
 	path = vendor/rlImGui
 	url = https://github.com/raylib-extras/rlImGui.git
+[submodule "vendor/FastNoiseLite"]
+	path = vendor/FastNoiseLite
+	url = https://github.com/Auburn/FastNoiseLite.git
