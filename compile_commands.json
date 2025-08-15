@@ -10,8 +10,8 @@
       "bin/main.o",
       "src/main.cpp"
     ],
-    "directory": "/run/media/jholzman/Fortress/raylib-cpp-starter",
-    "file": "/run/media/jholzman/Fortress/raylib-cpp-starter/src/main.cpp",
-    "output": "/run/media/jholzman/Fortress/raylib-cpp-starter/bin/main.o"
+    "directory": "/run/media/jholzman/Fortress/hydraulic-erosion",
+    "file": "/run/media/jholzman/Fortress/hydraulic-erosion/src/main.cpp",
+    "output": "/run/media/jholzman/Fortress/hydraulic-erosion/bin/main.o"
   }
 ]
