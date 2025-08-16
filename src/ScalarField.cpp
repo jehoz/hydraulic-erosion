@@ -44,6 +44,15 @@ float ScalarField::Get(raylib::Vector2 position)
            (*point.se) * point.offset.x * point.offset.y;
 }
 
+raylib::Vector2 ScalarField::Gradient(raylib::Vector2 position)
+{
+    FieldPoint point = FieldPoint(*this, position);
+    float x = (*point.ne - *point.nw) * (1 - point.offset.y) +
+              (*point.se - *point.sw) * point.offset.y;
+    float y = (*point.sw - *point.nw) * (1 - point.offset.x) +
+              (*point.se - *point.ne) * point.offset.x;
+}
+
 void ScalarField::Modify(raylib::Vector2 position, float delta)
 {
     FieldPoint point = FieldPoint(*this, position);
