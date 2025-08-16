@@ -14,6 +14,19 @@ class ScalarField
 
     int index(int x, int y);
 
+    struct FieldPoint
+    {
+        ScalarField& parent;
+
+        // distance from (x0,y0) to point
+        raylib::Vector2 offset;
+
+        // value of bounding cells on grid
+        float *nw, *ne, *sw, *se;
+
+        FieldPoint(ScalarField& parent, raylib::Vector2 position);
+    };
+
   public:
     int width, height;
 
