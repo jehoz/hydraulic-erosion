@@ -35,18 +35,6 @@ ScalarField::~ScalarField()
     delete[] data;
 }
 
-float ScalarField::GetCell(int x, int y)
-{
-    int i = index(x, y);
-    return data[i];
-}
-
-void ScalarField::SetCell(int x, int y, float value)
-{
-    int i = index(x, y);
-    data[i] = value;
-}
-
 float ScalarField::Get(raylib::Vector2 position)
 {
     FieldPoint point = FieldPoint(*this, position);

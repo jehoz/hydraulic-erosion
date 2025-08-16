@@ -33,9 +33,6 @@ class ScalarField
     ScalarField(int width, int height);
     ~ScalarField();
 
-    float GetCell(int x, int y);
-    void SetCell(int x, int y, float value);
-
     float Get(raylib::Vector2 position);
     raylib::Vector2 Gradient(raylib::Vector2 position);
     void Modify(raylib::Vector2 position, float delta);
