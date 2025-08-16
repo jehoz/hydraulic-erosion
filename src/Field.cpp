@@ -1,4 +1,5 @@
 #include "Field.hpp"
+#include <cassert>
 
 template<typename T>
 struct FieldPoint
@@ -43,7 +44,29 @@ Field<T>::~Field()
 }
 
 template<typename T>
+T Field<T>::GetCell(int x, int y)
+{
+    int i = index(x, y);
+    return data[i];
+}
+
+template<typename T>
+void Field<T>::SetCell(int x, int y, T value)
+{
+    int i = index(x, y);
+    return data[i] = value;
+}
+
+template<typename T>
 T Field<T>::GetAtPoint(raylib::Vector2 position)
 {
     // TODO
+}
+
+template<typename T>
+int Field<T>::index(int x, int y)
+{
+    assert(x > 0 && x < width);
+    assert(y > 0 && y < height);
+    return y * width + x;
 }
