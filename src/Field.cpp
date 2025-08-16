@@ -13,7 +13,7 @@ struct FieldPoint
     // value of bounding cells on grid
     T nw, ne, sw, se;
 
-    FieldPoint(Field<T>* parent, raylib::Vector2 position)
+    FieldPoint(Field<T>* field, raylib::Vector2 position)
     {
         float y_ipart;
         float y_fpart = std::modf(position.y, &y_ipart);
@@ -21,11 +21,16 @@ struct FieldPoint
         float x_fpart = std::modf(position.x, &x_ipart);
 
         y0 = static_cast<int>(y_ipart);
-        y1 = y0 + 1 < parent->height ? y0 + 1 : y0;
+        y1 = y0 + 1 < field->height ? y0 + 1 : y0;
         x0 = static_cast<int>(x_ipart);
-        x1 = x0 + 1 < parent->width ? x0 + 1 : x0;
+        x1 = x0 + 1 < field->width ? x0 + 1 : x0;
 
-        // TODO populate bounding cell values
+        offset = raylib::Vector2(x_fpart, y_fpart);
+
+        nw = field->GetCell(x0, y0);
+        ne = field->GetCell(x1, y0);
+        sw = field->GetCell(x0, y1);
+        se = field->GetCell(x1, y1);
     }
 };
 
