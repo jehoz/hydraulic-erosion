@@ -51,6 +51,8 @@ raylib::Vector2 ScalarField::Gradient(raylib::Vector2 position)
               (*point.se - *point.sw) * point.offset.y;
     float y = (*point.sw - *point.nw) * (1 - point.offset.x) +
               (*point.se - *point.ne) * point.offset.x;
+
+    return raylib::Vector2(x, y);
 }
 
 void ScalarField::Modify(raylib::Vector2 position, float delta)
