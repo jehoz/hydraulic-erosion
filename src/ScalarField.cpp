@@ -12,7 +12,7 @@ struct FieldPoint
     // value of bounding cells on grid
     float nw, ne, sw, se;
 
-    FieldPoint(Field<T>* field, raylib::Vector2 position)
+    FieldPoint(ScalarField* field, raylib::Vector2 position)
     {
         float y_ipart;
         float y_fpart = std::modf(position.y, &y_ipart);
@@ -33,42 +33,38 @@ struct FieldPoint
     }
 };
 
-template<typename T>
-Field<T>::ScalarField(int width, int height)
+ScalarField::ScalarField(int width, int height)
   : width(width)
   , height(height)
 {
-    data = new T[width * height];
+    data = new float[width * height];
 }
 
-template<typename T>
-Field<T>::~Field()
+ScalarField::~ScalarField()
 {
     delete[] data;
 }
 
-template<typename T>
-T Field<T>::GetCell(int x, int y)
+float ScalarField::GetCell(int x, int y)
 {
     int i = index(x, y);
     return data[i];
 }
 
-template<typename T>
-void Field<T>::SetCell(int x, int y, T value)
+void ScalarField::SetCell(int x, int y, float value)
 {
     int i = index(x, y);
-    return data[i] = value;
+    data[i] = value;
 }
 
-template<typename T>
-T Field<T>::Get(raylib::Vector2 position)
+float ScalarField::Get(raylib::Vector2 position)
 {
-    FieldPoint<T> point = FieldPoint<T>(this, position);
+    FieldPoint point = FieldPoint(this, position);
+
+    return 0.0f;
 }
 
-template<typename T>
-int Field<T>::index(int x, int y)
+int ScalarField::index(int x, int y)
 {
     assert(x > 0 && x < width);
     assert(y > 0 && y < height);
