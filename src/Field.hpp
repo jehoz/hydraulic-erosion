@@ -13,12 +13,14 @@ class Field
     ~Field();
 
     T GetCell(int x, int y);
-    T SetCell(int x, int y, T value);
+    void SetCell(int x, int y, T value);
 
     T GetAtPoint(raylib::Vector2 position);
 
   private:
     T* data;
+
+    int index(int x, int y);
 };
 
 #endif
