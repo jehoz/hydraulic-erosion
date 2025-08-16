@@ -1,7 +1,6 @@
-#include "Field.hpp"
+#include "ScalarField.hpp"
 #include <cassert>
 
-template<typename T>
 struct FieldPoint
 {
     // bounding coordinates of point
@@ -11,7 +10,7 @@ struct FieldPoint
     raylib::Vector2 offset;
 
     // value of bounding cells on grid
-    T nw, ne, sw, se;
+    float nw, ne, sw, se;
 
     FieldPoint(Field<T>* field, raylib::Vector2 position)
     {
@@ -35,7 +34,7 @@ struct FieldPoint
 };
 
 template<typename T>
-Field<T>::Field(int width, int height)
+Field<T>::ScalarField(int width, int height)
   : width(width)
   , height(height)
 {
@@ -63,9 +62,9 @@ void Field<T>::SetCell(int x, int y, T value)
 }
 
 template<typename T>
-T Field<T>::GetAtPoint(raylib::Vector2 position)
+T Field<T>::Get(raylib::Vector2 position)
 {
-    // TODO
+    FieldPoint<T> point = FieldPoint<T>(this, position);
 }
 
 template<typename T>

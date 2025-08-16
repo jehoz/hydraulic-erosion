@@ -8,26 +8,24 @@
  * Can be sampled at any point and the result will be a linear combination of
  * the four nearest cells in the underlying grid.
  */
-template<typename T>
-class Field
+class ScalarField
 {
+    float* data;
+
+    int index(int x, int y);
+
   public:
     int width, height;
 
-    Field(int width, int height);
-    ~Field();
+    ScalarField(int width, int height);
+    ~ScalarField();
 
-    T GetCell(int x, int y);
-    void SetCell(int x, int y, T value);
+    float GetCell(int x, int y);
+    void SetCell(int x, int y, float value);
 
-    T Get(raylib::Vector2 position);
+    float Get(raylib::Vector2 position);
     raylib::Vector2 Gradient(raylib::Vector2 position);
-    void Modify(raylib::Vector2 position, T delta);
-
-  private:
-    T* data;
-
-    int index(int x, int y);
+    void Modify(raylib::Vector2 position, float delta);
 };
 
 #endif
