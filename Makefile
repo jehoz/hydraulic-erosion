@@ -74,6 +74,7 @@ include: submodules
 	$(call COPY,vendor/raylib/src,./include,raymath.h)
 	$(call COPY,vendor/raylib/src,./include,rlgl.h)
 	$(call COPY,vendor/raylib-cpp/include,./include,*.hpp)
+	$(call COPY,vendor/raygui/src,./include,raygui.h)
 	$(call COPY,vendor/FastNoiseLite/Cpp,./include,FastNoiseLite.h)
 
 # Build the raylib static library file and copy it into lib
