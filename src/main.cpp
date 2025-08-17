@@ -1,4 +1,8 @@
+#include "FastNoiseLite.h"
 #include "raylib-cpp.hpp"
+
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
 
 int main()
 {
@@ -16,7 +20,24 @@ int main()
                             45.0f,
                             CAMERA_PERSPECTIVE);
 
-    raylib::Image heightmap = LoadImage("noise.png");
+    FastNoiseLite noise;
+    noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+    noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+    noise.SetFractalGain(0.5f);
+    noise.SetFractalOctaves(6);
+    noise.SetFrequency(0.0075 / 2.0);
+
+    raylib::Image heightmap(256, 256, BLACK);
+    for (int y = 0; y < 256; y++) {
+        for (int x = 0; x < 256; x++) {
+            float height =
+              noise.GetNoise(static_cast<float>(x), static_cast<float>(y));
+            // remap from [-1, 1] to [0, 1]
+            height = (height + 1.0) / 2.0;
+            heightmap.DrawPixel(
+              x, y, raylib::Color(raylib::Vector3(0, 0, height)));
+        }
+    }
     raylib::Texture2D heightmapTex = LoadTextureFromImage(heightmap);
 
     raylib::Mesh mesh = GenMeshHeightmap(heightmap, raylib::Vector3(16, 8, 16));
