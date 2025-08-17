@@ -3,10 +3,10 @@
 
 #include "raylib-cpp.hpp"
 
-/*! An abstraction for treating a 2D grid of values as a continuous field.
+/*! An abstraction for treating a 2D array of floats as a continuous field.
  *
  * Can be sampled at any point and the result will be a linear combination of
- * the four nearest cells in the underlying grid.
+ * the four nearest cells in the underlying array.
  */
 class ScalarField
 {
@@ -21,7 +21,7 @@ class ScalarField
         // distance from (x0,y0) to point
         raylib::Vector2 offset;
 
-        // value of bounding cells on grid
+        // pointers to four bounding cells in array
         float *nw, *ne, *sw, *se;
 
         FieldPoint(ScalarField& parent, raylib::Vector2 position);
