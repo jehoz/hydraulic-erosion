@@ -1,8 +1,5 @@
 #include "FastNoiseLite.h"
-#include "raylib-cpp.hpp"
-
-#define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
+#include "raylib-cpp.hpp" // IWYU pragma: keep
 
 int main()
 {
