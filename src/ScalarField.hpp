@@ -1,7 +1,7 @@
 #ifndef FIELD_HPP
 #define FIELD_HPP
 
-#include "raylib-cpp.hpp"
+#include "raylib-cpp.hpp" // IWYU pragma: keep
 
 /*! An abstraction for treating a 2D array of floats as a continuous field.
  *
@@ -36,6 +36,9 @@ class ScalarField
     float Get(raylib::Vector2 position);
     raylib::Vector2 Gradient(raylib::Vector2 position);
     void Modify(raylib::Vector2 position, float delta);
+
+    float GetCell(int x, int y);
+    void SetCell(int x, int y, float value);
 };
 
 #endif

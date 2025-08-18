@@ -64,6 +64,16 @@ void ScalarField::Modify(raylib::Vector2 position, float delta)
     (*point.se) += delta * point.offset.x * point.offset.y;
 }
 
+float ScalarField::GetCell(int x, int y)
+{
+    return data[index(x, y)];
+}
+
+void ScalarField::SetCell(int x, int y, float value)
+{
+    data[index(x, y)] = value;
+}
+
 int ScalarField::index(int x, int y)
 {
     assert(x >= 0 && x < width);
