@@ -66,7 +66,7 @@ void ScalarField::Modify(raylib::Vector2 position, float delta)
 
 int ScalarField::index(int x, int y)
 {
-    assert(x > 0 && x < width);
-    assert(y > 0 && y < height);
+    assert(x >= 0 && x < width);
+    assert(y >= 0 && y < height);
     return y * width + x;
 }
