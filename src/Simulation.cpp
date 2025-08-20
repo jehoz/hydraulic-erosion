@@ -20,17 +20,18 @@ Simulation::Simulation(int meshResolution)
     noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
     noise.SetFractalGain(0.5f);
     noise.SetFractalOctaves(6);
-    noise.SetFrequency(0.0075 / 2.0);
+    noise.SetFrequency(0.0075);
 
-    // intialize  heightmaps
+    // intialize heightmap
     heightmap_img = raylib::Image(meshResolution, meshResolution, BLACK);
-    heightmap_tex = LoadTextureFromImage(heightmap_img);
 
     for (int y = 0; y < meshResolution; y++) {
         for (int x = 0; x < meshResolution; x++) {
             float height =
-              noise.GetNoise(static_cast<float>(x) / meshResolution,
-                             static_cast<float>(y) / meshResolution);
+              noise.GetNoise(static_cast<float>(x), static_cast<float>(y));
+            // noise.GetNoise(static_cast<float>(x) / meshResolution,
+            //                static_cast<float>(y) / meshResolution);
+
             // remap from [-1, 1] to [0, 1]
             height = (height + 1.0) / 2.0;
 
@@ -39,17 +40,16 @@ Simulation::Simulation(int meshResolution)
     }
 
     renderTexture();
+    heightmap_tex = LoadTextureFromImage(heightmap_img);
 
     // initialize mesh instances and shaders
-    raylib::Mesh mesh =
-      GenMeshHeightmap(heightmap_img, raylib::Vector3(16, 0, 16));
-    model = LoadModelFromMesh(mesh);
+    auto mesh =
+      raylib::Mesh::Heightmap(heightmap_img, raylib::Vector3(16, 8, 16));
+    model.Load(mesh);
 
     for (int i = 0; i < NUM_MESH_INSTANCES; i++) {
         float z_offset = static_cast<float>(i) / NUM_MESH_INSTANCES;
-        /* instance_transforms[i] = raylib::Matrix::Translate(-8, z_offset, -8);
-         */
-        instance_transforms[i] = raylib::Matrix::Translate(0, z_offset, 0);
+        instance_transforms[i] = raylib::Matrix::Translate(-8, z_offset, -8);
     }
 
     shader =
@@ -73,12 +73,10 @@ void Simulation::Render()
 {
     renderTexture();
 
-    DrawMesh(model.meshes[0], model.materials[0], instance_transforms[0]);
-
-    /* DrawMeshInstanced(model.meshes[0], */
-    /*                   model.materials[0], */
-    /*                   instance_transforms.data(), */
-    /*                   NUM_MESH_INSTANCES); */
+    DrawMeshInstanced(model.meshes[0],
+                      model.materials[0],
+                      instance_transforms.data(),
+                      NUM_MESH_INSTANCES);
 }
 
 /*! Renders the values of the terrain_height field to the heightmap texture.
