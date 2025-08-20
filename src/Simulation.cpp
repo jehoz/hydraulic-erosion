@@ -22,8 +22,7 @@ Simulation::Simulation(int meshResolution)
     noise.SetFractalOctaves(6);
     noise.SetFrequency(0.0075 / 2.0);
 
-    // intialize terrain and heightmaps
-    terrain_height = ScalarField(meshResolution, meshResolution);
+    // intialize  heightmaps
     heightmap_img = raylib::Image(meshResolution, meshResolution, BLACK);
     heightmap_tex = LoadTextureFromImage(heightmap_img);
 
@@ -103,6 +102,5 @@ void Simulation::renderTexture()
         }
     }
 
-    heightmap_tex = LoadTextureFromImage(heightmap_img);
-    /* heightmap_tex.Update(heightmap_img.data); */
+    heightmap_tex.Update(heightmap_img.data);
 }
