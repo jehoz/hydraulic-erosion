@@ -10,7 +10,8 @@ int main()
 
     SetTargetFPS(60);
 
-    raylib::Color backgroundColor(0xE2EFFFFF);
+    // raylib::Color backgroundColor(0xE2EFFFFF);
+    raylib::Color backgroundColor(0x222222FF);
 
     raylib::Camera3D camera(raylib::Vector3(20.0, 30.0, 20.0),
                             raylib::Vector3(0.0f, 0.0f, 0.0f),
@@ -30,7 +31,6 @@ int main()
             camera.BeginMode();
             {
                 simulation.Render();
-
                 DrawGrid(20, 1.0f);
             }
             camera.EndMode();
