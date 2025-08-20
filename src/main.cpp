@@ -1,4 +1,5 @@
 #include "FastNoiseLite.h"
+#include "Simulation.hpp"
 #include "raylib-cpp.hpp" // IWYU pragma: keep
 
 int main()
@@ -17,31 +18,7 @@ int main()
                             45.0f,
                             CAMERA_PERSPECTIVE);
 
-    FastNoiseLite noise;
-    noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-    noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
-    noise.SetFractalGain(0.5f);
-    noise.SetFractalOctaves(6);
-    noise.SetFrequency(0.0075 / 2.0);
-
-    raylib::Image heightmap(256, 256, BLACK);
-    for (int y = 0; y < 256; y++) {
-        for (int x = 0; x < 256; x++) {
-            float height =
-              noise.GetNoise(static_cast<float>(x), static_cast<float>(y));
-            // remap from [-1, 1] to [0, 1]
-            height = (height + 1.0) / 2.0;
-            heightmap.DrawPixel(
-              x, y, raylib::Color(raylib::Vector3(0, 0, height)));
-        }
-    }
-    raylib::Texture2D heightmapTex = LoadTextureFromImage(heightmap);
-
-    raylib::Mesh mesh = GenMeshHeightmap(heightmap, raylib::Vector3(16, 8, 16));
-    raylib::Model terrainModel = LoadModelFromMesh(mesh);
-    terrainModel.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = heightmapTex;
-
-    raylib::Matrix modelTransform = MatrixTranslate(-8, 0, -8);
+    Simulation simulation(256);
 
     while (!w.ShouldClose()) {
         camera.Update(CAMERA_ORBITAL);
@@ -52,9 +29,7 @@ int main()
 
             camera.BeginMode();
             {
-                DrawMesh(terrainModel.meshes[0],
-                         terrainModel.materials[0],
-                         modelTransform);
+                simulation.Render();
 
                 DrawGrid(20, 1.0f);
             }
@@ -65,8 +40,6 @@ int main()
         EndDrawing();
     }
 
-    UnloadTexture(heightmapTex);
-    UnloadModel(terrainModel);
     CloseWindow();
 
     return 0;
