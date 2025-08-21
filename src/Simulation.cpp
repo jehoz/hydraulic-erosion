@@ -20,7 +20,7 @@ Simulation::Simulation(int meshResolution)
     noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
     noise.SetFractalGain(0.5f);
     noise.SetFractalOctaves(6);
-    noise.SetFrequency(0.0075);
+    noise.SetFrequency(0.75);
 
     // intialize heightmap
     heightmap_img = raylib::Image(meshResolution, meshResolution, BLACK);
@@ -28,9 +28,8 @@ Simulation::Simulation(int meshResolution)
     for (int y = 0; y < meshResolution; y++) {
         for (int x = 0; x < meshResolution; x++) {
             float height =
-              noise.GetNoise(static_cast<float>(x), static_cast<float>(y));
-            // noise.GetNoise(static_cast<float>(x) / meshResolution,
-            //                static_cast<float>(y) / meshResolution);
+              noise.GetNoise(static_cast<float>(x) / meshResolution,
+                             static_cast<float>(y) / meshResolution);
 
             // remap from [-1, 1] to [0, 1]
             height = (height + 1.0) / 2.0;
@@ -54,14 +53,12 @@ Simulation::Simulation(int meshResolution)
 
     shader =
       LoadShader("src/shaders/heightmap.vert", "src/shaders/heightmap.frag");
-    /* raylib::Shader shader("src/shaders/heightmap.vert", */
-    /*                       "src/shaders/heightmap.frag"); */
     shader.locs[SHADER_LOC_MATRIX_MODEL] =
       shader.GetLocationAttrib("instanceTransform");
 
     model.materials[0].shader = shader;
     model.materials[0].maps[0].texture = heightmap_tex;
-    model.materials[0].maps[1].texture = heightmap_tex;
+    // model.materials[0].maps[1].texture = heightmap_tex;
 }
 
 void Simulation::Update()

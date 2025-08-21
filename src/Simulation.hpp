@@ -6,7 +6,7 @@
 #include "raylib-cpp.hpp" // IWYU pragma: keep
 #include <array>
 
-const int NUM_MESH_INSTANCES = 32;
+const int NUM_MESH_INSTANCES = 1;
 
 struct InitialTerrain
 {
