@@ -28,12 +28,17 @@ class Simulation
     ScalarField terrain_height;
     raylib::Image heightmap_img;
     raylib::Texture heightmap_tex;
+
+    ScalarField terrain_wet;
+    raylib::Image wetmap_img;
+    raylib::Texture wetmap_tex;
+
     raylib::Shader shader;
 
     raylib::Model model;
     std::array<raylib::Matrix, NUM_MESH_INSTANCES> instance_transforms;
 
-    void renderTexture();
+    void renderTextures();
 
   public:
     Simulation(int meshResolution = 256);
