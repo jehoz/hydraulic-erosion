@@ -3,6 +3,7 @@
 
 #include "FastNoiseLite.h"
 #include "ScalarField.hpp"
+#include "UnorderedArena.hpp"
 #include "raylib-cpp.hpp" // IWYU pragma: keep
 #include <array>
 
@@ -25,6 +26,8 @@ struct WaterParticle
 
 class Simulation
 {
+    UnorderedArena<WaterParticle> particles;
+
     ScalarField terrain_height;
     raylib::Image heightmap_img;
     raylib::Texture heightmap_tex;
