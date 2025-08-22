@@ -7,6 +7,3 @@
 [submodule "vendor/FastNoiseLite"]
 	path = vendor/FastNoiseLite
 	url = https://github.com/Auburn/FastNoiseLite.git
-[submodule "vendor/raygui"]
-	path = vendor/raygui
-	url = https://github.com/raysan5/raygui.git
