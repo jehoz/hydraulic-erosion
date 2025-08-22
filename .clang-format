@@ -2,3 +2,4 @@ BasedOnStyle: Mozilla
 IndentWidth: 4
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
+ColumnLimit: 120
