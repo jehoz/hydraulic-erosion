@@ -4,6 +4,10 @@
 #include <cstddef>
 #include <iterator>
 
+/*! A fixed-capacity arena that uses swapback for removals, making it pretty
+ * quick to remove arbitrary elements, but it doesn't preserve the order of its
+ * contents.
+ */
 template<typename T>
 struct UnorderedArena
 {
@@ -22,7 +26,8 @@ struct UnorderedArena
     UnorderedArena<T>(int capacity);
     ~UnorderedArena();
 
-    void add(T);
+    void Add(T);
+    void Remove(int index);
 
   private:
     T* data;

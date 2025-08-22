@@ -1,11 +1,12 @@
 #include "UnorderedArena.hpp"
+#include "raylib.h"
 
 template<typename T>
 UnorderedArena<T>::UnorderedArena(int capacity)
+  : capacity_(capacity)
+  , size_(0)
 {
     data = new T[capacity];
-    size_ = 0;
-    capacity_ = N;
 }
 
 template<typename T>
@@ -15,8 +16,29 @@ UnorderedArena<T>::~UnorderedArena()
 }
 
 template<typename T>
-void UnorderedArena<T>::add(T elem)
+void UnorderedArena<T>::Add(T elem)
 {
-    if (size_ < capacity_) {
+    if (size >= capacity) {
+        TraceLog(LOG_ERROR, "UnorderedArena::Add arena is full");
+        return;
     }
+
+    data[size] = elem;
+    size_++;
+}
+
+template<typename T>
+void UnorderedArena<T>::Remove(int index)
+{
+    if (index >= size) {
+        TraceLog(LOG_ERROR, "UnorderedArena::Remove index out of bounds");
+        return;
+    }
+
+    // no need to swapback if only a single element
+    if (size > 1) {
+        data[index] = data[size - 1];
+    }
+
+    size_--;
 }
