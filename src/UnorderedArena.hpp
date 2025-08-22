@@ -1,11 +1,11 @@
-#ifndef UNORDERED_ARRAY_HPP
-#define UNORDERED_ARRAY_HPP
+#ifndef UNORDERED_ARENA_HPP
+#define UNORDERED_ARENA_HPP
 
 #include <cstddef>
 #include <iterator>
 
-template<typename T, std::size_t N>
-struct unordered_array
+template<typename T>
+struct UnorderedArena
 {
     struct Iterator
     {
@@ -19,8 +19,8 @@ struct unordered_array
     const int& size = size_;
     const int& capacity = capacity_;
 
-    unordered_array<T, N>();
-    ~unordered_array();
+    UnorderedArena<T>(int capacity);
+    ~UnorderedArena();
 
     void add(T);
 
