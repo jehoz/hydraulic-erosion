@@ -3,15 +3,16 @@
 #include <algorithm>
 #include <cstdint>
 
-WaterParticle::WaterParticle(raylib::Vector2 position)
-  : position(position)
+void WaterParticle::Init(raylib::Vector2 position)
 {
+    position = position;
     velocity = raylib::Vector2(0.0f, 0.0f);
     volume = 1.0f;
 }
 
 Simulation::Simulation(int meshResolution)
-  : terrain_height(ScalarField(meshResolution, meshResolution))
+  : particles(UnorderedArena<WaterParticle>(256))
+  , terrain_height(ScalarField(meshResolution, meshResolution))
   , terrain_wet(ScalarField(meshResolution, meshResolution))
 {
     heightmap_img = raylib::Image(meshResolution, meshResolution, BLACK);
@@ -62,7 +63,9 @@ Simulation::Simulation(int meshResolution)
 
 void Simulation::Update()
 {
-    // TODO
+    for (auto& particle : particles) {
+        // TODO do the erosion
+    }
 }
 
 void Simulation::Render()
