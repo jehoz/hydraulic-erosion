@@ -9,10 +9,24 @@
 
 const int NUM_MESH_INSTANCES = 1;
 
-struct InitialTerrain
+struct ErosionOptions
 {
-    FastNoiseLite noise;
-    int resolution = 256;
+    int num_particles = 50000;
+
+    float min_volume = 0.01;
+
+    float sediment_transfer = 0.5;
+
+    float evaporation = 0.01;
+
+    float sediment_ration = 3;
+
+    float friction = 0.05;
+
+    float gravity = 12.0;
+
+    float soil_evaporation = 0.00025;
+    float soil_absorption = 0.5;
 };
 
 struct WaterParticle
@@ -21,7 +35,7 @@ struct WaterParticle
     raylib::Vector2 velocity;
     float volume;
 
-    WaterParticle(raylib::Vector2 position);
+    void Init(raylib::Vector2 position);
 };
 
 class Simulation
