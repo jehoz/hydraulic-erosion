@@ -11,7 +11,7 @@ void WaterParticle::Init(raylib::Vector2 position)
 }
 
 Simulation::Simulation(int meshResolution)
-  : particles(UnorderedArena<WaterParticle>(256))
+  : particles(UnorderedArena<WaterParticle>(1024))
   , terrain_height(ScalarField(meshResolution, meshResolution))
   , terrain_wet(ScalarField(meshResolution, meshResolution))
 {
@@ -63,16 +63,42 @@ Simulation::Simulation(int meshResolution)
     model.materials[0].shader = shader;
     model.materials[0].maps[0].texture = heightmap_tex;
     model.materials[0].maps[1].texture = wetmap_tex;
+
+    while (particles.size < particles.capacity) {
+        particles.Add(WaterParticle());
+    }
 }
 
 void Simulation::Update()
 {
-
-    for (auto& particle : particles) {
-        if (particle.volume < options.min_volume) {
+    for (auto& p : particles) {
+        if (p.volume < options.min_volume) {
             auto position = raylib::Vector2(w_dist(rng), h_dist(rng));
-            particle.Init(position);
+            p.Init(position);
         }
+
+        // movement
+        auto init_pos = p.position;
+        auto grav_force = terrain_height.Gradient(p.position).Scale(options.gravity);
+        p.velocity = p.velocity.Scale(1.0f - options.friction).Subtract(grav_force);
+        p.position = p.position.Add(p.velocity.Normalize());
+        if (p.position.x < 0 || p.position.x >= terrain_height.width || p.position.y < 0 ||
+            p.position.y >= terrain_height.height) {
+            p.volume = 0;
+            continue;
+        }
+
+        // sediment transfer
+        float delta_elev = terrain_height.Get(p.position) - terrain_height.Get(init_pos);
+        float delta_sed = delta_elev * options.sediment_transfer;
+
+        if (delta_sed > 0) {
+            delta_sed *= options.sediment_ratio;
+        }
+        terrain_height.Modify(init_pos, delta_sed);
+
+        // evaporate
+        p.volume *= 1.0f - options.evaporation;
     }
 }
 
