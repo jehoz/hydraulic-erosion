@@ -15,6 +15,10 @@ Simulation::Simulation(int meshResolution)
   , terrain_height(ScalarField(meshResolution, meshResolution))
   , terrain_wet(ScalarField(meshResolution, meshResolution))
 {
+    rng = std::mt19937(12345);
+    w_dist = std::uniform_real_distribution<float>(0, terrain_height.width);
+    h_dist = std::uniform_real_distribution<float>(0, terrain_height.height);
+
     heightmap_img = raylib::Image(meshResolution, meshResolution, BLACK);
     heightmap_tex = LoadTextureFromImage(heightmap_img);
 
@@ -63,8 +67,12 @@ Simulation::Simulation(int meshResolution)
 
 void Simulation::Update()
 {
+
     for (auto& particle : particles) {
-        // TODO do the erosion
+        if (particle.volume < options.min_volume) {
+            auto position = raylib::Vector2(w_dist(rng), h_dist(rng));
+            particle.Init(position);
+        }
     }
 }
 
