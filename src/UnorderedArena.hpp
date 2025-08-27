@@ -14,12 +14,12 @@ class UnorderedArena
 
     T* data;
 
-    size_t size_;
     size_t capacity_;
+    size_t size_;
 
   public:
-    const size_t& size = size_;
     const size_t& capacity = capacity_;
+    const size_t& size = size_;
 
     UnorderedArena(size_t capacity)
       : capacity_(capacity)
