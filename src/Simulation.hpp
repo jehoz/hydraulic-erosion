@@ -12,14 +12,31 @@ const int NUM_MESH_INSTANCES = 1;
 
 struct ErosionOptions
 {
+    // Number of water particles to spawn and simulate
     int num_particles = 50000;
+
+    // Minimum volume of a particle before it is culled
     float min_volume = 0.01;
+
+    // Scale factor for how much sediment is eroded/deposited at each time-step
     float sediment_transfer = 0.5;
+
+    // Percent volume reduction of particle at each time-step
     float evaporation = 0.01;
-    float sediment_ratio = 3;
+
+    // Amount of sediment that is deposted relative to how much is eroded by the particle
+    float sediment_ratio = 1.0;
+
+    // Percent speed reduction of water particle at each time-step
     float friction = 0.05;
+
+    // Scale factor for how much terrain slope affects particle velocity
     float gravity = 12.0;
+
+    // Percent moisture reduction of terrain at each time-step
     float soil_evaporation = 0.00025;
+
+    // Scale factor for how much moisture a water particle adds to the ground
     float soil_absorption = 0.5;
 };
 
@@ -27,15 +44,14 @@ struct WaterParticle
 {
     raylib::Vector2 position;
     raylib::Vector2 velocity;
-    float volume;
+    float volume = 0;
 
-    void Init(raylib::Vector2 position);
+    void Init(float x, float y);
 };
 
 class Simulation
 {
     UnorderedArena<WaterParticle> particles;
-    ErosionOptions options;
 
     // rng
     std::mt19937 rng;
@@ -60,6 +76,9 @@ class Simulation
     void renderTextures();
 
   public:
+    int particles_remaining = 0;
+    ErosionOptions options;
+
     Simulation(int meshResolution = 256);
 
     void Update();

@@ -3,15 +3,16 @@
 #include <algorithm>
 #include <cstdint>
 
-void WaterParticle::Init(raylib::Vector2 position)
+void WaterParticle::Init(float x, float y)
 {
-    position = position;
+    position.x = x;
+    position.y = y;
     velocity = raylib::Vector2(0.0f, 0.0f);
     volume = 1.0f;
 }
 
 Simulation::Simulation(int meshResolution)
-  : particles(UnorderedArena<WaterParticle>(1024))
+  : particles(UnorderedArena<WaterParticle>(256))
   , terrain_height(ScalarField(meshResolution, meshResolution))
   , terrain_wet(ScalarField(meshResolution, meshResolution))
 {
@@ -64,42 +65,54 @@ Simulation::Simulation(int meshResolution)
     model.materials[0].maps[0].texture = heightmap_tex;
     model.materials[0].maps[1].texture = wetmap_tex;
 
-    while (particles.size < particles.capacity) {
+    particles_remaining = options.num_particles;
+    while (particles.size < particles.capacity && particles_remaining > 0) {
         particles.Add(WaterParticle());
+        particles_remaining--;
     }
+    TraceLog(LOG_INFO, "Initialized %d water particles.", particles.size);
 }
 
 void Simulation::Update()
 {
-    for (auto& p : particles) {
-        if (p.volume < options.min_volume) {
-            auto position = raylib::Vector2(w_dist(rng), h_dist(rng));
-            p.Init(position);
+    for (int i = 0; i < 100; i++)
+        for (auto& p : particles) {
+            // reinitialize (or delete) dead particles
+            if (p.volume < options.min_volume) {
+                if (particles_remaining > 0) {
+                    float x = w_dist(rng);
+                    float y = h_dist(rng);
+                    p.Init(x, y);
+                    particles_remaining--;
+                } else {
+                    continue;
+                }
+            }
+
+            // movement
+            auto init_pos = p.position;
+            auto grav_force = terrain_height.Gradient(p.position).Scale(options.gravity);
+
+            p.velocity = p.velocity.Scale(1.0f - options.friction).Subtract(grav_force);
+            p.position = p.position.Add(p.velocity.Normalize());
+            if (p.position.x < 0 || p.position.x >= terrain_height.width || p.position.y < 0 ||
+                p.position.y >= terrain_height.height) {
+                // if particle goes out of bounds, just set its volume to zero so it gets reinitialized next iter
+                p.volume = 0;
+                continue;
+            }
+
+            // sediment transfer
+            float delta_elev = terrain_height.Get(p.position) - terrain_height.Get(init_pos);
+            float delta_sed = delta_elev * options.sediment_transfer;
+            if (delta_sed > 0) {
+                delta_sed *= options.sediment_ratio;
+            }
+            terrain_height.Modify(init_pos, delta_sed);
+
+            // evaporate
+            p.volume *= 1.0f - options.evaporation;
         }
-
-        // movement
-        auto init_pos = p.position;
-        auto grav_force = terrain_height.Gradient(p.position).Scale(options.gravity);
-        p.velocity = p.velocity.Scale(1.0f - options.friction).Subtract(grav_force);
-        p.position = p.position.Add(p.velocity.Normalize());
-        if (p.position.x < 0 || p.position.x >= terrain_height.width || p.position.y < 0 ||
-            p.position.y >= terrain_height.height) {
-            p.volume = 0;
-            continue;
-        }
-
-        // sediment transfer
-        float delta_elev = terrain_height.Get(p.position) - terrain_height.Get(init_pos);
-        float delta_sed = delta_elev * options.sediment_transfer;
-
-        if (delta_sed > 0) {
-            delta_sed *= options.sediment_ratio;
-        }
-        terrain_height.Modify(init_pos, delta_sed);
-
-        // evaporate
-        p.volume *= 1.0f - options.evaporation;
-    }
 }
 
 void Simulation::Render()

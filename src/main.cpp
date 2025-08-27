@@ -1,4 +1,3 @@
-#include "FastNoiseLite.h"
 #include "Simulation.hpp"
 #include "raylib-cpp.hpp" // IWYU pragma: keep
 
@@ -10,7 +9,7 @@ int main()
 
     SetTargetFPS(60);
 
-    // raylib::Color backgroundColor(0xE2EFFFFF);
+    /* raylib::Color backgroundColor(0xE2EFFFFF); */
     raylib::Color backgroundColor(0x222222FF);
 
     raylib::Camera3D camera(raylib::Vector3(20.0, 30.0, 20.0),
@@ -23,6 +22,7 @@ int main()
 
     while (!w.ShouldClose()) {
         camera.Update(CAMERA_ORBITAL);
+        simulation.Update();
 
         BeginDrawing();
         {
@@ -36,6 +36,7 @@ int main()
             camera.EndMode();
 
             DrawFPS(10, 10);
+            DrawText(TextFormat("remaining particles: %d", simulation.particles_remaining), 10, 50, 20, WHITE);
         }
         EndDrawing();
     }
