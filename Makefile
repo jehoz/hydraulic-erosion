@@ -61,7 +61,7 @@ endif
 all: $(target) execute clean
 
 # Sets up the project for compiling, generates includes and libs
-setup: include lib
+setup: include lib imgui
 
 # Pull and update the the build submodules
 submodules:
@@ -74,7 +74,6 @@ include: submodules
 	$(call COPY,vendor/raylib/src,./include,raymath.h)
 	$(call COPY,vendor/raylib/src,./include,rlgl.h)
 	$(call COPY,vendor/raylib-cpp/include,./include,*.hpp)
-	$(call COPY,vendor/raygui/src,./include,raygui.h)
 	$(call COPY,vendor/FastNoiseLite/Cpp,./include,FastNoiseLite.h)
 
 # Build the raylib static library file and copy it into lib
@@ -82,6 +81,17 @@ lib: submodules
 	cd vendor/raylib/src $(THEN) "$(MAKE)" PLATFORM=PLATFORM_DESKTOP
 	$(MKDIR) $(call platformpth, lib/$(platform))
 	$(call COPY,vendor/raylib/src,lib/$(platform),libraylib.a)
+
+# copy imgui files into subdirectory in src
+imgui: submodules
+	$(MKDIR) $(call platformpth, ./src/imgui)
+	$(call COPY,vendor/imgui,./src/imgui,*.h)
+	$(call COPY,vendor/imgui,./src/imgui,*.cpp)
+	$(call COPY,vendor/rlImGui,./src/imgui,*.h)
+	$(call COPY,vendor/rlImGui,./src/imgui,*.cpp)
+	$(MKDIR) $(call platformpth, ./src/imgui/extras)
+	$(call COPY,vendor/rlImGui/extras,./src/imgui/extras,*.h)
+
 
 # Link the program and create the executable
 $(target): $(objects)
