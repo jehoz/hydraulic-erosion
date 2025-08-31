@@ -5,8 +5,8 @@
 
 int main()
 {
-    int screenWidth = 800;
-    int screenHeight = 600;
+    int screenWidth = 1280;
+    int screenHeight = 720;
     raylib::Window w(screenWidth, screenHeight, "terrain");
 
     rlImGuiSetup(true);
@@ -14,7 +14,7 @@ int main()
     SetTargetFPS(60);
 
     /* raylib::Color backgroundColor(0xE2EFFFFF); */
-    raylib::Color backgroundColor(0x222222FF);
+    raylib::Color backgroundColor(0x0F0F0FFF);
 
     raylib::Camera3D camera(raylib::Vector3(20.0, 30.0, 20.0),
                             raylib::Vector3(0.0f, 0.0f, 0.0f),
@@ -43,14 +43,25 @@ int main()
             }
             camera.EndMode();
 
-            DrawFPS(10, 10);
-            DrawText(TextFormat("remaining particles: %d", simulation.particles_remaining), 10, 50, 20, WHITE);
+            DrawFPS(screenWidth - 80, screenHeight - 20);
+            DrawText(
+              TextFormat("remaining particles: %d", simulation.particles_remaining), screenWidth - 500, 10, 20, WHITE);
 
             ImGui::SetNextWindowPos(ImVec2(0, 0));
-            ImGui::SetNextWindowSize(ImVec2(250, screenHeight));
+            ImGui::SetNextWindowSize(ImVec2(300, screenHeight));
             ImGui::Begin("side panel", nullptr, window_flags);
             ImGui::Text("Simulation Settings");
-            ImGui::SliderInt("Number of Particles", &simulation.options.num_particles, 0, 100000000);
+            ImGui::SliderInt(
+              "Particles", &simulation.options.num_particles, 0, 100000000, "%d", ImGuiSliderFlags_Logarithmic);
+            ImGui::SliderFloat(
+              "Min Volume", &simulation.options.min_volume, 0, 1.0, "%f", ImGuiSliderFlags_Logarithmic);
+            ImGui::SliderFloat("Sediment Transfer", &simulation.options.sediment_transfer, 0, 1.0);
+            ImGui::SliderFloat("Evaporation", &simulation.options.evaporation, 0, 1.0);
+            ImGui::SliderFloat("Sediment Ratio", &simulation.options.sediment_ratio, 0, 10.0);
+            ImGui::SliderFloat("Friction", &simulation.options.friction, 0, 1.0);
+            ImGui::SliderFloat("Gravity", &simulation.options.gravity, 0, 100.0);
+            ImGui::SliderFloat("Soil Evaporation", &simulation.options.soil_evaporation, 0, 1.0);
+            ImGui::SliderFloat("Soil Absorption", &simulation.options.soil_absorption, 0, 1.0);
 
             ImGui::End();
         }
