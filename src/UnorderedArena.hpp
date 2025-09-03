@@ -61,6 +61,8 @@ class UnorderedArena
 
         size_--;
     }
+
+    void Clear() { size_ = 0; }
 };
 
 #endif
