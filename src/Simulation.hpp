@@ -52,6 +52,9 @@ struct WaterParticle
 class Simulation
 {
     UnorderedArena<WaterParticle> particles;
+    FastNoiseLite noise;
+    bool is_running_ = false;
+    int meshResolution = 256;
 
     // rng
     std::mt19937 rng;
@@ -73,13 +76,18 @@ class Simulation
     raylib::Model model;
     std::array<raylib::Matrix, NUM_MESH_INSTANCES> instance_transforms;
 
+    void initializeTerrain();
     void renderTextures();
 
   public:
-    int particles_remaining = 0;
+    int particles_remaining;
+    const bool& is_running = is_running_;
     ErosionOptions options;
 
-    Simulation(int meshResolution = 256);
+    Simulation();
+
+    void Launch();
+    void Cancel();
 
     void Update();
     void Render();

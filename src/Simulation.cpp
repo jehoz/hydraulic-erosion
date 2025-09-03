@@ -1,6 +1,7 @@
 #include "Simulation.hpp"
 #include "raylib.h"
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 
 void WaterParticle::Init(float x, float y)
@@ -11,7 +12,7 @@ void WaterParticle::Init(float x, float y)
     volume = 1.0f;
 }
 
-Simulation::Simulation(int meshResolution)
+Simulation::Simulation()
   : particles(UnorderedArena<WaterParticle>(256))
   , terrain_height(ScalarField(meshResolution, meshResolution))
   , terrain_wet(ScalarField(meshResolution, meshResolution))
@@ -27,24 +28,13 @@ Simulation::Simulation(int meshResolution)
     wetmap_tex = LoadTextureFromImage(wetmap_img);
 
     // initialize heightmap with noise
-    FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
     noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
     noise.SetFractalGain(0.5f);
     noise.SetFractalOctaves(6);
     noise.SetFrequency(0.75);
 
-    for (int y = 0; y < meshResolution; y++) {
-        for (int x = 0; x < meshResolution; x++) {
-            float height =
-              noise.GetNoise(static_cast<float>(x) / meshResolution, static_cast<float>(y) / meshResolution);
-
-            // remap from [-1, 1] to [0, 1]
-            height = (height + 1.0) / 2.0;
-
-            terrain_height.SetCell(x, y, height);
-        }
-    }
+    initializeTerrain();
     renderTextures();
 
     // NOTE: if I generate the mesh with Mesh::Plane, it has some weird extra
@@ -64,19 +54,45 @@ Simulation::Simulation(int meshResolution)
     model.materials[0].shader = shader;
     model.materials[0].maps[0].texture = heightmap_tex;
     model.materials[0].maps[1].texture = wetmap_tex;
+}
 
+void Simulation::Launch()
+{
+    if (is_running_) {
+        TraceLog(LOG_ERROR, "Attempted to launch simulation while one was already running.");
+        return;
+    }
+
+    initializeTerrain();
     particles_remaining = options.num_particles;
     while (particles.size < particles.capacity && particles_remaining > 0) {
         particles.Add(WaterParticle());
         particles_remaining--;
     }
-    TraceLog(LOG_INFO, "Initialized %d water particles.", particles.size);
+    is_running_ = true;
+}
+
+void Simulation::Cancel()
+{
+    is_running_ = false;
+    particles.Clear();
 }
 
 void Simulation::Update()
 {
-    for (int i = 0; i < 100; i++)
-        for (auto& p : particles) {
+    if (!is_running_) {
+        return;
+    } else if (particles.size == 0) {
+        is_running_ = false;
+    }
+
+    std::chrono::milliseconds duration(10);
+    auto end = std::chrono::high_resolution_clock::now() + duration;
+
+    while (std::chrono::high_resolution_clock::now() < end)
+        for (size_t i = 0; i < particles.size; i++) {
+            auto& p = particles[i];
+
             // reinitialize (or delete) dead particles
             if (p.volume < options.min_volume) {
                 if (particles_remaining > 0) {
@@ -85,7 +101,11 @@ void Simulation::Update()
                     p.Init(x, y);
                     particles_remaining--;
                 } else {
-                    continue;
+                    particles.Remove(i);
+
+                    if (i == particles.size) {
+                        continue;
+                    }
                 }
             }
 
@@ -120,6 +140,23 @@ void Simulation::Render()
     renderTextures();
 
     DrawMeshInstanced(model.meshes[0], model.materials[0], instance_transforms.data(), NUM_MESH_INSTANCES);
+}
+
+/*! Uses noise to generate initial terrain height
+ */
+void Simulation::initializeTerrain()
+{
+    for (int y = 0; y < meshResolution; y++) {
+        for (int x = 0; x < meshResolution; x++) {
+            float height =
+              noise.GetNoise(static_cast<float>(x) / meshResolution, static_cast<float>(y) / meshResolution);
+
+            // remap from [-1, 1] to [0, 1]
+            height = (height + 1.0) / 2.0;
+
+            terrain_height.SetCell(x, y, height);
+        }
+    }
 }
 
 /*! Renders the values of the terrain_height field to the heightmap texture.
