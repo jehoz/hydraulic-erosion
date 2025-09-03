@@ -22,7 +22,7 @@ int main()
                             45.0f,
                             CAMERA_PERSPECTIVE);
 
-    Simulation simulation(256);
+    Simulation simulation;
 
     auto window_flags =
       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
@@ -44,24 +44,40 @@ int main()
             camera.EndMode();
 
             DrawFPS(screenWidth - 80, screenHeight - 20);
-            DrawText(
-              TextFormat("remaining particles: %d", simulation.particles_remaining), screenWidth - 500, 10, 20, WHITE);
 
             ImGui::SetNextWindowPos(ImVec2(0, 0));
-            ImGui::SetNextWindowSize(ImVec2(300, screenHeight));
+            ImGui::SetNextWindowSize(ImVec2(350, screenHeight));
             ImGui::Begin("side panel", nullptr, window_flags);
             ImGui::Text("Simulation Settings");
-            ImGui::SliderInt(
-              "Particles", &simulation.options.num_particles, 0, 100000000, "%d", ImGuiSliderFlags_Logarithmic);
-            ImGui::SliderFloat(
-              "Min Volume", &simulation.options.min_volume, 0, 1.0, "%f", ImGuiSliderFlags_Logarithmic);
-            ImGui::SliderFloat("Sediment Transfer", &simulation.options.sediment_transfer, 0, 1.0);
-            ImGui::SliderFloat("Evaporation", &simulation.options.evaporation, 0, 1.0);
-            ImGui::SliderFloat("Sediment Ratio", &simulation.options.sediment_ratio, 0, 10.0);
-            ImGui::SliderFloat("Friction", &simulation.options.friction, 0, 1.0);
-            ImGui::SliderFloat("Gravity", &simulation.options.gravity, 0, 100.0);
-            ImGui::SliderFloat("Soil Evaporation", &simulation.options.soil_evaporation, 0, 1.0);
-            ImGui::SliderFloat("Soil Absorption", &simulation.options.soil_absorption, 0, 1.0);
+
+            ImGui::BeginDisabled(simulation.is_running);
+            {
+                ImGui::SliderInt(
+                  "Particles", &simulation.options.num_particles, 0, 100000000, "%d", ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderFloat(
+                  "Min Volume", &simulation.options.min_volume, 0, 1.0, "%f", ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderFloat("Sediment Transfer", &simulation.options.sediment_transfer, 0, 1.0);
+                ImGui::SliderFloat("Evaporation", &simulation.options.evaporation, 0, 1.0);
+                ImGui::SliderFloat("Sediment Ratio", &simulation.options.sediment_ratio, 0, 10.0);
+                ImGui::SliderFloat("Friction", &simulation.options.friction, 0, 1.0);
+                ImGui::SliderFloat("Gravity", &simulation.options.gravity, 0, 100.0);
+                ImGui::SliderFloat("Soil Evaporation", &simulation.options.soil_evaporation, 0, 1.0);
+                ImGui::SliderFloat("Soil Absorption", &simulation.options.soil_absorption, 0, 1.0);
+            }
+            ImGui::EndDisabled();
+
+            if (simulation.is_running) {
+                ImGui::Text("%d / %d particles",
+                            simulation.options.num_particles - simulation.particles_remaining,
+                            simulation.options.num_particles);
+                if (ImGui::Button("Cancel Simulation")) {
+                    simulation.Cancel();
+                }
+            } else {
+                if (ImGui::Button("Launch Simulation")) {
+                    simulation.Launch();
+                }
+            }
 
             ImGui::End();
         }
