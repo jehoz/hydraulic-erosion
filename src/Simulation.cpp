@@ -130,9 +130,23 @@ void Simulation::Update()
             }
             terrain_height.Modify(init_pos, delta_sed);
 
+            // soil moisture
+            float inv_speed = std::max(0.0, 1.0 - p.velocity.Length());
+            float inv_saturation = std::max(0.0, 1.0 - terrain_wet.Get(p.position));
+            inv_saturation *= inv_saturation;
+            float delta_wet = inv_speed * inv_saturation * options.soil_absorption;
+            terrain_wet.Modify(p.position, delta_wet);
+
             // evaporate
             p.volume *= 1.0f - options.evaporation;
         }
+
+    for (size_t y = 0; y < terrain_wet.height; y++) {
+        for (size_t x = 0; x < terrain_wet.width; x++) {
+            float i = terrain_wet.GetCell(x, y);
+            terrain_wet.SetCell(x, y, i * 1.0 - options.soil_evaporation);
+        }
+    }
 }
 
 void Simulation::Render()
@@ -155,6 +169,7 @@ void Simulation::initializeTerrain()
             height = (height + 1.0) / 2.0;
 
             terrain_height.SetCell(x, y, height);
+            terrain_wet.SetCell(x, y, 0);
         }
     }
 }
