@@ -77,6 +77,7 @@ class Simulation
 
   public:
     FastNoiseLite noise;
+    bool normalize_heightmap = false;
     ErosionOptions options;
 
     int particles_remaining;

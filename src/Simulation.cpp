@@ -160,6 +160,8 @@ void Simulation::Render()
  */
 void Simulation::initializeTerrain()
 {
+    float min = 1.0, max = 0.0;
+
     for (int y = 0; y < meshResolution; y++) {
         for (int x = 0; x < meshResolution; x++) {
             float height =
@@ -168,8 +170,26 @@ void Simulation::initializeTerrain()
             // remap from [-1, 1] to [0, 1]
             height = (height + 1.0) / 2.0;
 
+            if (height < min) {
+                min = height;
+            }
+            if (height > max) {
+                max = height;
+            }
+
             terrain_height.SetCell(x, y, height);
             terrain_wet.SetCell(x, y, 0);
+        }
+    }
+
+    if (normalize_heightmap) {
+        // remap heightmap from [min, max] to [0, 1]
+        for (int y = 0; y < meshResolution; y++) {
+            for (int x = 0; x < meshResolution; x++) {
+                float h = terrain_height.GetCell(x, y);
+                h = (h - min) * (1.0f / (max - min));
+                terrain_height.SetCell(x, y, h);
+            }
         }
     }
 }
