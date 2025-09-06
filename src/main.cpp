@@ -43,16 +43,6 @@ int main()
     int fnlCellularReturnType = 1;
     float fnlCellularJitter = 1.0f;
 
-    int fnlDomainWarpSpeed = 1337;
-    float fnlDomainWarpFrequency = 0.01f;
-    int fnlDomainWarpType = 0;
-    float fnlDomainWarpAmplitude = 1.0f;
-
-    int fnlDomainWarpFractalType = 0;
-    int fnlDomainWarpFractalOctaves = 3;
-    float fnlDomainWarpFractalLacunarity = 2.0f;
-    float fnlDomainWarpFractalGain = 0.5f;
-
     static const char* enumNoiseType[] = {
         "OpenSimplex2", "OpenSimplex2S", "Cellular", "Perlin", "Value Cubic", "Value"
     };
@@ -61,8 +51,6 @@ int main()
     static const char* enumCellularReturnType[] = { "Cell Value",     "Distance",       "Distance 2",
                                                     "Distance 2 Add", "Distance 2 Sub", "Distance 2 Mul",
                                                     "Distance 2 Div" };
-    static const char* enumDomainWarpType[] = { "None", "OpenSimplex2", "OpenSimplex2 Reduced", "Basic Grid" };
-    static const char* enumDomainWarpFractalType[] = { "None", "Progressive", "Independent" };
 
     while (!w.ShouldClose()) {
         camera.Update(CAMERA_ORBITAL);
@@ -86,10 +74,9 @@ int main()
             ImGui::SetNextWindowSize(ImVec2(350, screenHeight));
             ImGui::Begin("side panel", nullptr, windowFlags);
 
-            ImGui::Text("Heightmap");
+            ImGui::SeparatorText("Heightmap");
             bool fnlConfigChanged = false;
 
-            ImGui::BeginGroup();
             if (ImGui::Combo("Noise Type", &fnlNoiseType, enumNoiseType, IM_ARRAYSIZE(enumNoiseType))) {
                 simulation.noise.SetNoiseType((FastNoiseLite::NoiseType)fnlNoiseType);
                 fnlConfigChanged = true;
@@ -100,6 +87,9 @@ int main()
             }
             if (ImGui::DragFloat("Frequency", &fnlFrequency, 0.0002f)) {
                 simulation.noise.SetFrequency(fnlFrequency);
+                fnlConfigChanged = true;
+            }
+            if (ImGui::Checkbox("Normalize", &simulation.normalize_heightmap)) {
                 fnlConfigChanged = true;
             }
 
@@ -152,39 +142,27 @@ int main()
             }
             ImGui::EndDisabled();
 
-            ImGui::TextUnformatted("Domain Warp");
-            if (ImGui::Combo(
-                  "Domain Warp Type", &fnlDomainWarpType, enumDomainWarpType, IM_ARRAYSIZE(enumDomainWarpType))) {
-                simulation.noise.SetDomainWarpType((FastNoiseLite::DomainWarpType)fnlDomainWarpType);
-                fnlConfigChanged = true;
-            }
-            // TODO finish the rest here
-
-            ImGui::EndGroup();
-
             if (fnlConfigChanged) {
                 simulation.initializeTerrain();
             }
 
-            ImGui::Text("Erosion");
+            ImGui::SeparatorText("Erosion");
 
             ImGui::BeginDisabled(simulation.is_running);
             {
-                ImGui::BeginGroup();
-                ImGui::SliderInt(
-                  "Particles", &simulation.options.num_particles, 0, 100000000, "%d", ImGuiSliderFlags_Logarithmic);
-                ImGui::SliderFloat(
-                  "Min Volume", &simulation.options.min_volume, 0, 1.0, "%f", ImGuiSliderFlags_Logarithmic);
-                ImGui::SliderFloat("Sediment Transfer", &simulation.options.sediment_transfer, 0, 1.0);
-                ImGui::SliderFloat("Evaporation", &simulation.options.evaporation, 0, 1.0);
-                ImGui::SliderFloat("Sediment Ratio", &simulation.options.sediment_ratio, 0, 10.0);
-                ImGui::SliderFloat("Friction", &simulation.options.friction, 0, 1.0);
-                ImGui::SliderFloat("Gravity", &simulation.options.gravity, 0, 100.0);
-                ImGui::SliderFloat("Soil Evaporation", &simulation.options.soil_evaporation, 0, 1.0);
-                ImGui::SliderFloat("Soil Absorption", &simulation.options.soil_absorption, 0, 1.0);
-                ImGui::EndGroup();
+                ImGui::DragInt("Particles", &simulation.options.num_particles, 100.0f, 0);
+                ImGui::DragFloat("Min Volume", &simulation.options.min_volume, 0.0001f, 0.0001f, 1.0f);
+                ImGui::DragFloat("Sediment Transfer", &simulation.options.sediment_transfer, 0.001f, 0.0f, 1.0f);
+                ImGui::DragFloat("Evaporation", &simulation.options.evaporation, 0.001f, 0.0f, 1.0f);
+                ImGui::DragFloat("Sediment Ratio", &simulation.options.sediment_ratio, 0.01f, 0.0f);
+                ImGui::DragFloat("Friction", &simulation.options.friction, 0, 1.0);
+                ImGui::DragFloat("Gravity", &simulation.options.gravity, 0.001f, 0.0f);
+                ImGui::DragFloat("Soil Evaporation", &simulation.options.soil_evaporation, 0.001f, 0.0f, 1.0f);
+                ImGui::DragFloat("Soil Absorption", &simulation.options.soil_absorption, 0.001f, 0.0f, 1.0f);
             }
             ImGui::EndDisabled();
+
+            ImGui::Separator();
 
             if (simulation.is_running) {
                 ImGui::Text("%d / %d particles",
