@@ -8,21 +8,21 @@
 #include <array>
 #include <random>
 
-const int NUM_MESH_INSTANCES = 1;
+const int NUM_MESH_INSTANCES = 8;
 
 struct ErosionOptions
 {
     // Number of water particles to spawn and simulate
     int num_particles = 50000;
 
+    // Percent volume reduction of particle at each time-step
+    float volume_decay = 0.01;
+
     // Minimum volume of a particle before it is culled
     float min_volume = 0.01;
 
     // Scale factor for how much sediment is eroded/deposited at each time-step
-    float sediment_transfer = 0.5;
-
-    // Percent volume reduction of particle at each time-step
-    float evaporation = 0.01;
+    float terrain_erodibility = 0.5;
 
     // Amount of sediment that is deposted relative to how much is eroded by the particle
     float sediment_ratio = 1.0;
