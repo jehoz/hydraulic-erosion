@@ -1,26 +1,31 @@
+#include "Keyboard.hpp"
 #include "Simulation.hpp"
 #include "imgui/imgui.h"
 #include "imgui/rlImGui.h"
 #include "raylib-cpp.hpp" // IWYU pragma: keep
+#include "raylib.h"
 
 int main()
 {
     int screenWidth = 1280;
     int screenHeight = 720;
+    int controlPanelWidth = 450;
     raylib::Window w(screenWidth, screenHeight, "terrain");
 
     rlImGuiSetup(true);
 
     SetTargetFPS(60);
 
-    /* raylib::Color backgroundColor(0xE2EFFFFF); */
-    raylib::Color backgroundColor(0x0F0F0FFF);
+    raylib::Color backgroundColor(0x353535FF);
 
-    raylib::Camera3D camera(raylib::Vector3(20.0, 30.0, 20.0),
+    raylib::Camera3D camera(raylib::Vector3(15.0f, 20.0f, 15.0f),
                             raylib::Vector3(0.0f, 0.0f, 0.0f),
                             raylib::Vector3(0.0f, 1.0f, 0.0f),
                             45.0f,
                             CAMERA_PERSPECTIVE);
+
+    raylib::RenderTexture terrainScreen(screenWidth - controlPanelWidth, screenHeight);
+    raylib::Rectangle terrainScreenRect(0, 0, terrainScreen.texture.width, -terrainScreen.texture.height);
 
     Simulation simulation;
 
@@ -32,7 +37,7 @@ int main()
     int fnlSeed = 1337;
     float fnlFrequency = 0.75f;
 
-    int fnlFractalType = 0;
+    int fnlFractalType = 1;
     int fnlFractalOctaves = 4;
     float fnlFractalLacunarity = 2.0f;
     float fnlFractalGain = 0.5f;
@@ -53,92 +58,104 @@ int main()
                                                     "Distance 2 Div" };
 
     while (!w.ShouldClose()) {
-        camera.Update(CAMERA_ORBITAL);
+        /* camera.Update(CAMERA_ORBITAL); */
         simulation.Update();
 
-        BeginDrawing();
-        rlImGuiBegin();
+        // render terrain model to a subsection of the screen (render texture)
+        terrainScreen.BeginMode();
         {
             ClearBackground(backgroundColor);
 
             camera.BeginMode();
             {
                 simulation.Render();
-                DrawGrid(20, 1.0f);
             }
             camera.EndMode();
+        }
+        terrainScreen.EndMode();
+
+        BeginDrawing();
+        rlImGuiBegin();
+        {
+            DrawTextureRec(terrainScreen.texture, terrainScreenRect, (Vector2){ (float)controlPanelWidth, 0 }, WHITE);
 
             DrawFPS(screenWidth - 80, screenHeight - 20);
 
             ImGui::SetNextWindowPos(ImVec2(0, 0));
-            ImGui::SetNextWindowSize(ImVec2(350, screenHeight));
+            ImGui::SetNextWindowSize(ImVec2(controlPanelWidth, screenHeight));
             ImGui::Begin("side panel", nullptr, windowFlags);
 
             ImGui::SeparatorText("Heightmap");
             bool fnlConfigChanged = false;
 
-            if (ImGui::Combo("Noise Type", &fnlNoiseType, enumNoiseType, IM_ARRAYSIZE(enumNoiseType))) {
-                simulation.noise.SetNoiseType((FastNoiseLite::NoiseType)fnlNoiseType);
-                fnlConfigChanged = true;
-            }
-            if (ImGui::DragInt("Seed", &fnlSeed)) {
-                simulation.noise.SetSeed(fnlSeed);
-                fnlConfigChanged = true;
-            }
-            if (ImGui::DragFloat("Frequency", &fnlFrequency, 0.0002f)) {
-                simulation.noise.SetFrequency(fnlFrequency);
-                fnlConfigChanged = true;
-            }
-            if (ImGui::Checkbox("Normalize", &simulation.normalize_heightmap)) {
-                fnlConfigChanged = true;
-            }
+            ImGui::BeginDisabled(simulation.is_running);
+            {
+                if (ImGui::Combo("Noise Type", &fnlNoiseType, enumNoiseType, IM_ARRAYSIZE(enumNoiseType))) {
+                    simulation.noise.SetNoiseType((FastNoiseLite::NoiseType)fnlNoiseType);
+                    fnlConfigChanged = true;
+                }
+                if (ImGui::DragInt("Seed", &fnlSeed)) {
+                    simulation.noise.SetSeed(fnlSeed);
+                    fnlConfigChanged = true;
+                }
+                if (ImGui::DragFloat("Frequency", &fnlFrequency, 0.0002f)) {
+                    simulation.noise.SetFrequency(fnlFrequency);
+                    fnlConfigChanged = true;
+                }
+                if (ImGui::Checkbox("Normalize", &simulation.normalize_heightmap)) {
+                    fnlConfigChanged = true;
+                }
 
-            ImGui::TextUnformatted("Fractal");
-            if (ImGui::Combo("Fractal Type", &fnlFractalType, enumFractalType, IM_ARRAYSIZE(enumFractalType))) {
-                simulation.noise.SetFractalType((FastNoiseLite::FractalType)fnlFractalType);
-                fnlConfigChanged = true;
-            }
-            ImGui::BeginDisabled(fnlFractalType == 0);
-            if (ImGui::DragInt("Octaves", &fnlFractalOctaves, 0.1f, 1, 20)) {
-                simulation.noise.SetFractalOctaves(fnlFractalOctaves);
-                fnlConfigChanged = true;
-            }
-            if (ImGui::DragFloat("Lacunarity", &fnlFractalLacunarity, 0.01f)) {
-                simulation.noise.SetFractalLacunarity(fnlFractalLacunarity);
-                fnlConfigChanged = true;
-            }
-            if (ImGui::DragFloat("Gain", &fnlFractalGain, 0.01f)) {
-                simulation.noise.SetFractalGain(fnlFractalGain);
-                fnlConfigChanged = true;
-            }
-            if (ImGui::DragFloat("Weighted Strength", &fnlFractalWeightedStrength, 0.01f)) {
-                simulation.noise.SetFractalWeightedStrength(fnlFractalWeightedStrength);
-                fnlConfigChanged = true;
-            }
-            ImGui::BeginDisabled(fnlFractalType != (int)FastNoiseLite::FractalType_PingPong);
-            if (ImGui::DragFloat("Ping Pong Strength", &fnlFractalPingPongStrength, 0.01f)) {
-                simulation.noise.SetFractalPingPongStrength(fnlFractalPingPongStrength);
-                fnlConfigChanged = true;
-            }
-            ImGui::EndDisabled();
-            ImGui::EndDisabled();
+                ImGui::TextUnformatted("Fractal");
+                if (ImGui::Combo("Fractal Type", &fnlFractalType, enumFractalType, IM_ARRAYSIZE(enumFractalType))) {
+                    simulation.noise.SetFractalType((FastNoiseLite::FractalType)fnlFractalType);
+                    fnlConfigChanged = true;
+                }
+                ImGui::BeginDisabled(fnlFractalType == 0);
+                if (ImGui::DragInt("Octaves", &fnlFractalOctaves, 0.1f, 1, 20)) {
+                    simulation.noise.SetFractalOctaves(fnlFractalOctaves);
+                    fnlConfigChanged = true;
+                }
+                if (ImGui::DragFloat("Lacunarity", &fnlFractalLacunarity, 0.01f)) {
+                    simulation.noise.SetFractalLacunarity(fnlFractalLacunarity);
+                    fnlConfigChanged = true;
+                }
+                if (ImGui::DragFloat("Gain", &fnlFractalGain, 0.01f)) {
+                    simulation.noise.SetFractalGain(fnlFractalGain);
+                    fnlConfigChanged = true;
+                }
+                if (ImGui::DragFloat("Weighted Strength", &fnlFractalWeightedStrength, 0.01f)) {
+                    simulation.noise.SetFractalWeightedStrength(fnlFractalWeightedStrength);
+                    fnlConfigChanged = true;
+                }
+                ImGui::BeginDisabled(fnlFractalType != (int)FastNoiseLite::FractalType_PingPong);
+                if (ImGui::DragFloat("Ping Pong Strength", &fnlFractalPingPongStrength, 0.01f)) {
+                    simulation.noise.SetFractalPingPongStrength(fnlFractalPingPongStrength);
+                    fnlConfigChanged = true;
+                }
+                ImGui::EndDisabled();
+                ImGui::EndDisabled();
 
-            ImGui::TextUnformatted("Cellular");
-            ImGui::BeginDisabled(fnlNoiseType != (int)FastNoiseLite::NoiseType_Cellular);
-            if (ImGui::Combo("Distance Function", &fnlCellularType, enumCellularType, IM_ARRAYSIZE(enumCellularType))) {
-                simulation.noise.SetCellularDistanceFunction((FastNoiseLite::CellularDistanceFunction)fnlCellularType);
-                fnlConfigChanged = true;
-            }
-            if (ImGui::Combo("Return Type",
-                             &fnlCellularReturnType,
-                             enumCellularReturnType,
-                             IM_ARRAYSIZE(enumCellularReturnType))) {
-                simulation.noise.SetCellularReturnType((FastNoiseLite::CellularReturnType)fnlCellularReturnType);
-                fnlConfigChanged = true;
-            }
-            if (ImGui::DragFloat("Jitter", &fnlCellularJitter, 0.01f)) {
-                simulation.noise.SetCellularJitter(fnlCellularJitter);
-                fnlConfigChanged = true;
+                ImGui::TextUnformatted("Cellular");
+                ImGui::BeginDisabled(fnlNoiseType != (int)FastNoiseLite::NoiseType_Cellular);
+                if (ImGui::Combo(
+                      "Distance Function", &fnlCellularType, enumCellularType, IM_ARRAYSIZE(enumCellularType))) {
+                    simulation.noise.SetCellularDistanceFunction(
+                      (FastNoiseLite::CellularDistanceFunction)fnlCellularType);
+                    fnlConfigChanged = true;
+                }
+                if (ImGui::Combo("Return Type",
+                                 &fnlCellularReturnType,
+                                 enumCellularReturnType,
+                                 IM_ARRAYSIZE(enumCellularReturnType))) {
+                    simulation.noise.SetCellularReturnType((FastNoiseLite::CellularReturnType)fnlCellularReturnType);
+                    fnlConfigChanged = true;
+                }
+                if (ImGui::DragFloat("Jitter", &fnlCellularJitter, 0.01f)) {
+                    simulation.noise.SetCellularJitter(fnlCellularJitter);
+                    fnlConfigChanged = true;
+                }
+                ImGui::EndDisabled();
             }
             ImGui::EndDisabled();
 
@@ -151,11 +168,11 @@ int main()
             ImGui::BeginDisabled(simulation.is_running);
             {
                 ImGui::DragInt("Particles", &simulation.options.num_particles, 100.0f, 0);
+                ImGui::DragFloat("Volume Decay", &simulation.options.volume_decay, 0.001f, 0.0f, 1.0f);
                 ImGui::DragFloat("Min Volume", &simulation.options.min_volume, 0.0001f, 0.0001f, 1.0f);
-                ImGui::DragFloat("Sediment Transfer", &simulation.options.sediment_transfer, 0.001f, 0.0f, 1.0f);
-                ImGui::DragFloat("Evaporation", &simulation.options.evaporation, 0.001f, 0.0f, 1.0f);
+                ImGui::DragFloat("Terrain Erodibility", &simulation.options.terrain_erodibility, 0.001f, 0.0f, 1.0f);
                 ImGui::DragFloat("Sediment Ratio", &simulation.options.sediment_ratio, 0.01f, 0.0f);
-                ImGui::DragFloat("Friction", &simulation.options.friction, 0, 1.0);
+                ImGui::DragFloat("Friction", &simulation.options.friction, 0.001f, 0.0f, 1.0f);
                 ImGui::DragFloat("Gravity", &simulation.options.gravity, 0.001f, 0.0f);
                 ImGui::DragFloat("Soil Evaporation", &simulation.options.soil_evaporation, 0.001f, 0.0f, 1.0f);
                 ImGui::DragFloat("Soil Absorption", &simulation.options.soil_absorption, 0.001f, 0.0f, 1.0f);
