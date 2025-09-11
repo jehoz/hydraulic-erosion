@@ -18,8 +18,8 @@ Simulation::Simulation()
   , terrain_wet(ScalarField(meshResolution, meshResolution))
 {
     rng = std::mt19937(12345);
-    w_dist = std::uniform_real_distribution<float>(0, terrain_height.width);
-    h_dist = std::uniform_real_distribution<float>(0, terrain_height.height);
+    w_dist = std::uniform_real_distribution<float>(0, terrain_height.width - 1.0);
+    h_dist = std::uniform_real_distribution<float>(0, terrain_height.height - 1.0);
 
     heightmap_img = raylib::Image(meshResolution, meshResolution, BLACK);
     heightmap_tex = LoadTextureFromImage(heightmap_img);
@@ -45,7 +45,7 @@ Simulation::Simulation()
 
     for (int i = 0; i < NUM_MESH_INSTANCES; i++) {
         float z_offset = static_cast<float>(i) / NUM_MESH_INSTANCES;
-        instance_transforms[i] = raylib::Matrix::Translate(-8, z_offset, -8);
+        instance_transforms[i] = raylib::Matrix::Translate(-8.0f, z_offset, -8.0f);
     }
 
     shader = LoadShader("src/shaders/heightmap.vert", "src/shaders/heightmap.frag");
@@ -124,7 +124,7 @@ void Simulation::Update()
 
             // sediment transfer
             float delta_elev = terrain_height.Get(p.position) - terrain_height.Get(init_pos);
-            float delta_sed = delta_elev * options.sediment_transfer;
+            float delta_sed = delta_elev * options.terrain_erodibility;
             if (delta_sed > 0) {
                 delta_sed *= options.sediment_ratio;
             }
@@ -138,13 +138,13 @@ void Simulation::Update()
             terrain_wet.Modify(p.position, delta_wet);
 
             // evaporate
-            p.volume *= 1.0f - options.evaporation;
+            p.volume *= 1.0f - options.volume_decay;
         }
 
     for (size_t y = 0; y < terrain_wet.height; y++) {
         for (size_t x = 0; x < terrain_wet.width; x++) {
             float i = terrain_wet.GetCell(x, y);
-            terrain_wet.SetCell(x, y, i * 1.0 - options.soil_evaporation);
+            terrain_wet.SetCell(x, y, i * (1.0 - options.soil_evaporation));
         }
     }
 }
@@ -200,6 +200,13 @@ void Simulation::renderTextures()
 {
     for (int y = 0; y < heightmap_img.height; y++) {
         for (int x = 0; x < heightmap_img.width; x++) {
+            // black-out 1px border to make it look a little nicer when rendering
+            if (x == 0 || y == 0 || x == heightmap_img.width - 1 || y == heightmap_img.height - 1) {
+                heightmap_img.DrawPixel(x, y, BLACK);
+                wetmap_img.DrawPixel(x, y, BLACK);
+                continue;
+            }
+
             /*  HEIGHTMAP  */
             float height = terrain_height.GetCell(x, y);
             uint32_t height_i = static_cast<uint32_t>(std::clamp(height, 0.0f, 1.0f) * 0xFFFFFF);
